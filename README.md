@@ -7,6 +7,27 @@ ArchlinuxARM for the STM32MP157C-DK2
 
 [https://archlinuxarm.org/platforms/armv7/broadcom/raspberry-pi-2]: #
 
+Prerequisities
+--------------
+
+### U-Boot
+### TF-A
+### Image
+  ```
+  ┌─[raphael@archlinux:~/src/archlinuxarm-stm32mp15] (main *=)
+  └─╼ paru -Qo /usr/bin/losetup
+  /usr/bin/losetup appartient à util-linux 2.41-4
+  ┌─[raphael@archlinux:~/src/archlinuxarm-stm32mp15] (main *=)
+  └─╼ paru -Qo $(which dd)
+  /usr/bin/dd appartient à coreutils 9.7-1
+  ┌─[raphael@archlinux:~/src/archlinuxarm-stm32mp15] (main *=)
+  └─╼ paru -Qo $(which sgdisk)
+  /usr/bin/sgdisk appartient à gptfdisk 1.0.10-1
+  ┌─[raphael@archlinux:~/src/archlinuxarm-stm32mp15] (main *=)
+  └─╼ paru -Qo $(which swig)
+  /usr/bin/swig appartient à swig 4.3.0-1
+  ```
+
 Installation
 ------------
 
@@ -45,6 +66,17 @@ recognise the GPT partition entries.  The
 [flashmap](https://wiki.st.com/stm32mpu/wiki/STM32_MPU_Flash_mapping#SD_card_memory_mapping)
 needs to have at least 4 partitions, including the rootfs.  Bootfs partition is
 optional if the rootfs partition has been flagged `legacy_boot`.
+
+Edit: according to [U-Boot
+documentation](https://docs.u-boot.org/en/latest/board/st/stm32mp1.html#prepare-an-sd-card),
+minimal partition layout without FIP support is as follow.
+
+  | *Num* | *Name* | *Size*  | *Trusted boot content* | *Basic boot content*   |
+  | ----- | ------ | ------- | ---------------------- | ---------------------- |
+  | 1     | fsbl1  | 256 KiB | TF-A_ BL2 (tf-a.stm32) | SPL (u-boot-spl.stm32) |
+  | 2     | fsbl2  | 256 KiB | TF-A_ BL2 (tf-a.stm32) | SPL (u-boot-spl.stm32) |
+  | 3     | ssbl   | 2MB     | U-Boot (u-boot.stm32)  | U-Boot (u-boot.img)    |
+  | 4     | <any>  | <any>   | Rootfs                                          |
 
 In order to install Archlinux ARM, the rootfs partition needs to be wiped out,
 with respect for its flags and labels.
@@ -271,3 +303,4 @@ TODO
 * Build FIP from scratch and `dd` onto `fsbl` partitions
 * Build from scratch via script
 * Automate with GitHub CI ?
+* sgdisk vs pengutronix/genimage ?
